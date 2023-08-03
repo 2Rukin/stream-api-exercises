@@ -30,393 +30,422 @@ import space.gavinklfong.demo.streamapi.repos.ProductRepo;
 @DataJpaTest
 public class StreamApiTest {
 
-	@Autowired
-	private CustomerRepo customerRepo;
+    @Autowired
+    private CustomerRepo customerRepo;
 
-	@Autowired
-	private OrderRepo orderRepo;
+    @Autowired
+    private OrderRepo orderRepo;
 
-	@Autowired
-	private ProductRepo productRepo;
+    @Autowired
+    private ProductRepo productRepo;
 
+    @Test
+    @DisplayName("Obtain a list of product with category = \"Books\" and price > 100" +
+            "получите список товаров с категорией = \"Книги\" и ценой > 100")
+    public void exercise1() {
+        long startTime = System.currentTimeMillis();
+        List<Product> result = productRepo.findAll()
+                .stream()
+                .filter(p -> p.getCategory().equalsIgnoreCase("Books"))
+                .filter(p -> p.getPrice() > 100)
+                .collect(Collectors.toList());
+        long endTime = System.currentTimeMillis();
+
+        log.info(String.format("exercise 1 - execution time: %1$d ms", (endTime - startTime)));
+        result.forEach(p -> log.info(p.toString()));
+    }
+
+    @Test
+    @DisplayName("мой результат 1 ")
+    public void ex0() {
+        List<Product> result = productRepo.findAll().stream()
+                .filter((product -> product.getCategory().equalsIgnoreCase("Books")
+                        && product.getPrice() > 100)).collect(Collectors.toList());
+
+
+        result.forEach(p -> log.error("\u001B[34m" + p.toString() + "\u001B[0m"));
+    }
+
+    public void ex1() {
+        log.error("\u001B[34m" + "p.toString()" + "\u001B[0m");
+
+    }
+
+    @Test
+    @DisplayName("Obtain a list of product with category = \"Books\" and price > 100 (using Predicate chaining for filter)" +
+            "Получить список товаров с категорией = \"Книги\" и ценой > 100 (используя предикат для фильтра)")
+    public void exercise1a() {
+        Predicate<Product> categoryFilter = product -> product.getCategory().equalsIgnoreCase("Books");
+        Predicate<Product> priceFilter = product -> product.getPrice() > 100;
+
+        long startTime = System.currentTimeMillis();
+        List<Product> result = productRepo.findAll()
+                .stream()
+                .filter(product -> categoryFilter.and(priceFilter).test(product))
+                .collect(Collectors.toList());
+        long endTime = System.currentTimeMillis();
+
+        log.info(String.format("\u001B[34m" + "exercise 1a - execution time: %1$d ms" + "\u001B[0m", (endTime - startTime)));
+//		result.forEach(p -> log.error(p.toString()));
+        result.forEach(p -> log.error("\u001B[34m" + p.toString() + "\u001B[0m"));
+    }
+//          result.forEach(p -> log.error("\u001B[34m" + p.toString() + "\u001B[0m"));
+//			log.info(String.format("\u001B[34m" + "exercise 1a - execution time: %1$d ms"+ "\u001B[0m", (endTime - startTime)));
+
+	/*
 	@Test
-	@DisplayName("Obtain a list of product with category = \"Books\" and price > 100" +
-			"получите список товаров с категорией = \"Книги\" и ценой > 100")
-	public void exercise1() {
-		long startTime = System.currentTimeMillis();
-		List<Product> result = productRepo.findAll()
-		.stream()
-		.filter(p -> p.getCategory().equalsIgnoreCase("Books"))
-		.filter(p -> p.getPrice() > 100)
-		.collect(Collectors.toList());
-		long endTime = System.currentTimeMillis();
+	@DisplayName("мой результат 1 ")
+	public void ex1 (){
 
-		log.info(String.format("exercise 1 - execution time: %1$d ms", (endTime - startTime)));
-		result.forEach(p -> log.info(p.toString()));
+    result.forEach(p -> log.error("\u001B[34m" + p.toString() + "\u001B[0m"));
 	}
 
-	@Test
-	@DisplayName("Obtain a list of product with category = \"Books\" and price > 100 (using Predicate chaining for filter)" +
-			"Получить список товаров с категорией = \"Книги\" и ценой > 100 (используя предикат для фильтра)")
-	public void exercise1a() {
-		Predicate<Product> categoryFilter = product -> product.getCategory().equalsIgnoreCase("Books");
-		Predicate<Product> priceFilter = product -> product.getPrice() > 100;
+	 */
 
-		long startTime = System.currentTimeMillis();
-		List<Product> result = productRepo.findAll()
-				.stream()
-				.filter(product -> categoryFilter.and(priceFilter).test(product))
-				.collect(Collectors.toList());
-		long endTime = System.currentTimeMillis();
+    @Test
+    @DisplayName("Obtain a list of product with category = \"Books\" and price > 100 (using BiPredicate for filter)" +
+            "Получить список товаров с категорией = \"Книги\" и ценой > 100 (используя предикат для фильтра)")
+    public void exercise1b() {
+        BiPredicate<Product, String> categoryFilter = (product, category) -> product.getCategory().equalsIgnoreCase(category);
 
-		log.info(String.format("exercise 1a - execution time: %1$d ms", (endTime - startTime)));
-		result.forEach(p -> log.info(p.toString()));
-	}
+        long startTime = System.currentTimeMillis();
+        List<Product> result = productRepo.findAll()
+                .stream()
+                .filter(product -> categoryFilter.test(product, "Books") && product.getPrice() > 100)
+                .collect(Collectors.toList());
+        long endTime = System.currentTimeMillis();
 
-	@Test
-	@DisplayName("Obtain a list of product with category = \"Books\" and price > 100 (using BiPredicate for filter)" +
-			"Получить список товаров с категорией = \"Книги\" и ценой > 100 (используя предикат для фильтра)")
-	public void exercise1b() {
-		BiPredicate<Product, String> categoryFilter = (product, category) -> product.getCategory().equalsIgnoreCase(category);
+        log.info(String.format("exercise 1b - execution time: %1$d ms", (endTime - startTime)));
+        result.forEach(p -> log.info(p.toString()));
+    }
 
-		long startTime = System.currentTimeMillis();
-		List<Product> result = productRepo.findAll()
-				.stream()
-				.filter(product -> categoryFilter.test(product, "Books") && product.getPrice() > 100)
-				.collect(Collectors.toList());
-		long endTime = System.currentTimeMillis();
+    @Test
+    @DisplayName("Obtain a list of order with product category = \"Baby\"" +
+            "Получите список заказов с категорией товара = \"Baby\"")
+    public void exercise2() {
+        long startTime = System.currentTimeMillis();
+        List<Order> result = orderRepo.findAll()
+                .stream()
+                .filter(o ->
+                        o.getProducts()
+                                .stream()
+                                .anyMatch(p -> p.getCategory().equalsIgnoreCase("Baby"))
+                )
+                .collect(Collectors.toList());
 
-		log.info(String.format("exercise 1b - execution time: %1$d ms", (endTime - startTime)));
-		result.forEach(p -> log.info(p.toString()));
-	}
+        long endTime = System.currentTimeMillis();
 
-	@Test
-	@DisplayName("Obtain a list of order with product category = \"Baby\"" +
-			"Получите список заказов с категорией товара = \"Baby\"")
-	public void exercise2() {
-		long startTime = System.currentTimeMillis();
-		List<Order> result = orderRepo.findAll()
-				.stream()
-				.filter(o ->
-					o.getProducts()
-					.stream()
-					.anyMatch(p -> p.getCategory().equalsIgnoreCase("Baby"))
-				)
-				.collect(Collectors.toList());
+        log.info(String.format("exercise 2 - execution time: %1$d ms", (endTime - startTime)));
+        result.forEach(o -> log.info(o.toString()));
 
-		long endTime = System.currentTimeMillis();
+    }
 
-		log.info(String.format("exercise 2 - execution time: %1$d ms", (endTime - startTime)));
-		result.forEach(o -> log.info(o.toString()));
+    @Test
+    @DisplayName("Obtain a list of product with category = “Toys” and then apply 10% discount\"" +
+            "Получите список товаров с категорией = “Игрушки”, а затем примените скидку 10%\"")
+    public void exercise3() {
+        long startTime = System.currentTimeMillis();
 
-	}
+        List<Product> result = productRepo.findAll()
+                .stream()
+                .filter(p -> p.getCategory().equalsIgnoreCase("Toys"))
+                .map(p -> p.withPrice(p.getPrice() * 0.9))
+                .collect(Collectors.toList());
 
-	@Test
-	@DisplayName("Obtain a list of product with category = “Toys” and then apply 10% discount\"" +
-			"Получите список товаров с категорией = “Игрушки”, а затем примените скидку 10%\"")
-	public void exercise3() {
-		long startTime = System.currentTimeMillis();
+        long endTime = System.currentTimeMillis();
+        log.info(String.format("exercise 3 - execution time: %1$d ms", (endTime - startTime)));
+        result.forEach(o -> log.info(o.toString()));
 
-		List<Product> result = productRepo.findAll()
-				.stream()
-				.filter(p -> p.getCategory().equalsIgnoreCase("Toys"))
-				.map(p -> p.withPrice(p.getPrice() * 0.9))
-				.collect(Collectors.toList());
+    }
 
-		long endTime = System.currentTimeMillis();
-		log.info(String.format("exercise 3 - execution time: %1$d ms", (endTime - startTime)));
-		result.forEach(o -> log.info(o.toString()));
+    @Test
+    @DisplayName("Obtain a list of products ordered by customer of tier 2 between 01-Feb-2021 and 01-Apr-2021" +
+            "Получите список продуктов, заказанных клиентом уровня 2 в период с 01 февраля 2021 года по 01 апреля 2021 года")
+    public void exercise4() {
+        long startTime = System.currentTimeMillis();
+        List<Product> result = orderRepo.findAll()
+                .stream()
+                .filter(o -> o.getCustomer().getTier() == 2)
+                .filter(o -> o.getOrderDate().compareTo(LocalDate.of(2021, 2, 1)) >= 0)
+                .filter(o -> o.getOrderDate().compareTo(LocalDate.of(2021, 4, 1)) <= 0)
+                .flatMap(o -> o.getProducts().stream())
+                .distinct()
+                .collect(Collectors.toList());
 
-	}
+        long endTime = System.currentTimeMillis();
+        log.info(String.format("exercise 4 - execution time: %1$d ms", (endTime - startTime)));
+        result.forEach(o -> log.info(o.toString()));
+    }
 
-	@Test
-	@DisplayName("Obtain a list of products ordered by customer of tier 2 between 01-Feb-2021 and 01-Apr-2021" +
-			"Получите список продуктов, заказанных клиентом уровня 2 в период с 01 февраля 2021 года по 01 апреля 2021 года")
-	public void exercise4() {
-		long startTime = System.currentTimeMillis();
-		List<Product> result = orderRepo.findAll()
-		.stream()
-		.filter(o -> o.getCustomer().getTier() == 2)
-		.filter(o -> o.getOrderDate().compareTo(LocalDate.of(2021, 2, 1)) >= 0)
-		.filter(o -> o.getOrderDate().compareTo(LocalDate.of(2021, 4, 1)) <= 0)
-		.flatMap(o -> o.getProducts().stream())
-		.distinct()
-		.collect(Collectors.toList());
-
-		long endTime = System.currentTimeMillis();
-		log.info(String.format("exercise 4 - execution time: %1$d ms", (endTime - startTime)));
-		result.forEach(o -> log.info(o.toString()));
-	}
-
-	@Test
-	@DisplayName("Get the 3 cheapest products of \"Books\" category " +
-			"Получите 3 самых дешевых товара из категории \"Книги\".")
-	public void exercise5() {
-		long startTime = System.currentTimeMillis();
+    @Test
+    @DisplayName("Get the 3 cheapest products of \"Books\" category " +
+            "Получите 3 самых дешевых товара из категории \"Книги\".")
+    public void exercise5() {
+        long startTime = System.currentTimeMillis();
 //              Optional<Product> result = productRepo.findAll()
 //                              .stream()
 //                              .filter(p -> p.getCategory().equalsIgnoreCase("Books"))
 //                              .sorted(Comparator.comparing(Product::getPrice))
 //                              .findFirst();
 
-		Optional<Product> result = productRepo.findAll()
-				.stream()
-				.filter(p -> p.getCategory().equalsIgnoreCase("Books"))
-				.min(Comparator.comparing(Product::getPrice));
+        Optional<Product> result = productRepo.findAll()
+                .stream()
+                .filter(p -> p.getCategory().equalsIgnoreCase("Books"))
+                .min(Comparator.comparing(Product::getPrice));
 
-		long endTime = System.currentTimeMillis();
-		log.info(String.format("exercise 5 - execution time: %1$d ms", (endTime - startTime)));
-		log.info(result.get().toString());
+        long endTime = System.currentTimeMillis();
+        log.info(String.format("exercise 5 - execution time: %1$d ms", (endTime - startTime)));
+        log.info(result.get().toString());
 
-	}
+    }
 
-	@Test
-	@DisplayName("Get the 3 most recent placed order " +
-			"Получите 3 самых последних размещенных заказа")
-	public void exercise6() {
-		long startTime = System.currentTimeMillis();
-		List<Order> result = orderRepo.findAll()
-				.stream()
-				.sorted(Comparator.comparing(Order::getOrderDate).reversed())
-				.limit(3)
-				.collect(Collectors.toList());
+    @Test
+    @DisplayName("Get the 3 most recent placed order " +
+            "Получите 3 самых последних размещенных заказа")
+    public void exercise6() {
+        long startTime = System.currentTimeMillis();
+        List<Order> result = orderRepo.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Order::getOrderDate).reversed())
+                .limit(3)
+                .collect(Collectors.toList());
 
-		long endTime = System.currentTimeMillis();
-		log.info(String.format("exercise 6 - execution time: %1$d ms", (endTime - startTime)));
-		result.forEach(o -> log.info(o.toString()));
-	}
+        long endTime = System.currentTimeMillis();
+        log.info(String.format("exercise 6 - execution time: %1$d ms", (endTime - startTime)));
+        result.forEach(o -> log.info(o.toString()));
+    }
 
-	@Test
-	@DisplayName("Get a list of products which was ordered on 15-Mar-2021" +
-			"Получите список товаров, которые были заказаны 15 марта 2021 года")
-	public void exercise7() {
-		long startTime = System.currentTimeMillis();
-		List<Product> result = orderRepo.findAll()
-				.stream()
-				.filter(o -> o.getOrderDate().isEqual(LocalDate.of(2021, 3, 15)))
-				.peek(o -> System.out.println(o.toString()))
-				.flatMap(o -> o.getProducts().stream())
-				.distinct()
-				.collect(Collectors.toList());
+    @Test
+    @DisplayName("Get a list of products which was ordered on 15-Mar-2021" +
+            "Получите список товаров, которые были заказаны 15 марта 2021 года")
+    public void exercise7() {
+        long startTime = System.currentTimeMillis();
+        List<Product> result = orderRepo.findAll()
+                .stream()
+                .filter(o -> o.getOrderDate().isEqual(LocalDate.of(2021, 3, 15)))
+                .peek(o -> System.out.println(o.toString()))
+                .flatMap(o -> o.getProducts().stream())
+                .distinct()
+                .collect(Collectors.toList());
 
-		long endTime = System.currentTimeMillis();
-		log.info(String.format("exercise 7 - execution time: %1$d ms", (endTime - startTime)));
-		result.forEach(o -> log.info(o.toString()));
-	}
+        long endTime = System.currentTimeMillis();
+        log.info(String.format("exercise 7 - execution time: %1$d ms", (endTime - startTime)));
+        result.forEach(o -> log.info(o.toString()));
+    }
 
-	@Test
-	@DisplayName("Calculate the total lump of all orders placed in Feb 2021 " +
-			"Рассчитайте общую сумму всех заказов, размещенных в феврале 2021 года")
-	public void exercise8() {
-		long startTime = System.currentTimeMillis();
-		double result = orderRepo.findAll()
-				.stream()
-				.filter(o -> o.getOrderDate().compareTo(LocalDate.of(2021, 2, 1)) >= 0)
-				.filter(o -> o.getOrderDate().compareTo(LocalDate.of(2021, 3, 1)) < 0)
-				.flatMap(o -> o.getProducts().stream())
-				.mapToDouble(Product::getPrice)
-				.sum();
+    @Test
+    @DisplayName("Calculate the total lump of all orders placed in Feb 2021 " +
+            "Рассчитайте общую сумму всех заказов, размещенных в феврале 2021 года")
+    public void exercise8() {
+        long startTime = System.currentTimeMillis();
+        double result = orderRepo.findAll()
+                .stream()
+                .filter(o -> o.getOrderDate().compareTo(LocalDate.of(2021, 2, 1)) >= 0)
+                .filter(o -> o.getOrderDate().compareTo(LocalDate.of(2021, 3, 1)) < 0)
+                .flatMap(o -> o.getProducts().stream())
+                .mapToDouble(Product::getPrice)
+                .sum();
 
-		long endTime = System.currentTimeMillis();
-		log.info(String.format("exercise 8 - execution time: %1$d ms", (endTime - startTime)));
-		log.info("Total lump sum = " + result);
-	}
+        long endTime = System.currentTimeMillis();
+        log.info(String.format("exercise 8 - execution time: %1$d ms", (endTime - startTime)));
+        log.info("Total lump sum = " + result);
+    }
 
-	@Test
-	@DisplayName("Calculate the total lump of all orders placed in Feb 2021 (using reduce with BiFunction) " +
-			"Рассчитайте общую сумму всех заказов, размещенных в феврале 2021 года (используя функцию reduce with Bi)")
-	public void exercise8a() {
-		BiFunction<Double, Product, Double> accumulator = (acc, product) -> acc + product.getPrice();
+    @Test
+    @DisplayName("Calculate the total lump of all orders placed in Feb 2021 (using reduce with BiFunction) " +
+            "Рассчитайте общую сумму всех заказов, размещенных в феврале 2021 года (используя функцию reduce with Bi)")
+    public void exercise8a() {
+        BiFunction<Double, Product, Double> accumulator = (acc, product) -> acc + product.getPrice();
 
-		long startTime = System.currentTimeMillis();
-		double result = orderRepo.findAll()
-				.stream()
-				.filter(o -> o.getOrderDate().compareTo(LocalDate.of(2021, 2, 1)) >= 0)
-				.filter(o -> o.getOrderDate().compareTo(LocalDate.of(2021, 3, 1)) < 0)
-				.flatMap(o -> o.getProducts().stream())
-				.reduce(0D, accumulator, Double::sum);
+        long startTime = System.currentTimeMillis();
+        double result = orderRepo.findAll()
+                .stream()
+                .filter(o -> o.getOrderDate().compareTo(LocalDate.of(2021, 2, 1)) >= 0)
+                .filter(o -> o.getOrderDate().compareTo(LocalDate.of(2021, 3, 1)) < 0)
+                .flatMap(o -> o.getProducts().stream())
+                .reduce(0D, accumulator, Double::sum);
 
-		long endTime = System.currentTimeMillis();
-		log.info(String.format("exercise 8a - execution time: %1$d ms", (endTime - startTime)));
-		log.info("Total lump sum = " + result);
-	}
+        long endTime = System.currentTimeMillis();
+        log.info(String.format("exercise 8a - execution time: %1$d ms", (endTime - startTime)));
+        log.info("Total lump sum = " + result);
+    }
 
-	@Test
-	@DisplayName("Calculate the average price of all orders placed on 15-Mar-2021" +
-			" Рассчитайте среднюю цену всех заказов, размещенных на 15 марта 2021 года")
-	public void exercise9() {
-		long startTime = System.currentTimeMillis();
-		double result = orderRepo.findAll()
-				.stream()
-				.filter(o -> o.getOrderDate().isEqual(LocalDate.of(2021, 3, 15)))
-				.flatMap(o -> o.getProducts().stream())
-				.mapToDouble(Product::getPrice)
-				.average().getAsDouble();
+    @Test
+    @DisplayName("Calculate the average price of all orders placed on 15-Mar-2021" +
+            " Рассчитайте среднюю цену всех заказов, размещенных на 15 марта 2021 года")
+    public void exercise9() {
+        long startTime = System.currentTimeMillis();
+        double result = orderRepo.findAll()
+                .stream()
+                .filter(o -> o.getOrderDate().isEqual(LocalDate.of(2021, 3, 15)))
+                .flatMap(o -> o.getProducts().stream())
+                .mapToDouble(Product::getPrice)
+                .average().getAsDouble();
 
-		long endTime = System.currentTimeMillis();
-		log.info(String.format("exercise 9 - execution time: %1$d ms", (endTime - startTime)));
-		log.info("Average = " + result);
-	}
+        long endTime = System.currentTimeMillis();
+        log.info(String.format("exercise 9 - execution time: %1$d ms", (endTime - startTime)));
+        log.info("Average = " + result);
+    }
 
-	@Test
-	@DisplayName("Obtain statistics summary of all products belong to \"Books\" category" +
-			" Получите сводную статистику по всем товарам, относящимся к категории \"Книги\".")
-	public void exercise10() {
-		long startTime = System.currentTimeMillis();
-		DoubleSummaryStatistics statistics = productRepo.findAll()
-				.stream()
-				.filter(p -> p.getCategory().equalsIgnoreCase("Books"))
-				.mapToDouble(Product::getPrice)
-				.summaryStatistics();
+    @Test
+    @DisplayName("Obtain statistics summary of all products belong to \"Books\" category" +
+            " Получите сводную статистику по всем товарам, относящимся к категории \"Книги\".")
+    public void exercise10() {
+        long startTime = System.currentTimeMillis();
+        DoubleSummaryStatistics statistics = productRepo.findAll()
+                .stream()
+                .filter(p -> p.getCategory().equalsIgnoreCase("Books"))
+                .mapToDouble(Product::getPrice)
+                .summaryStatistics();
 
-		long endTime = System.currentTimeMillis();
-		log.info(String.format("exercise 10 - execution time: %1$d ms", (endTime - startTime)));
-		log.info(String.format("count = %1$d, average = %2$f, max = %3$f, min = %4$f, sum = %5$f",
-				statistics.getCount(), statistics.getAverage(), statistics.getMax(), statistics.getMin(), statistics.getSum()));
+        long endTime = System.currentTimeMillis();
+        log.info(String.format("exercise 10 - execution time: %1$d ms", (endTime - startTime)));
+        log.info(String.format("count = %1$d, average = %2$f, max = %3$f, min = %4$f, sum = %5$f",
+                statistics.getCount(), statistics.getAverage(), statistics.getMax(), statistics.getMin(), statistics.getSum()));
 
-	}
+    }
 
-	@Test
-	@DisplayName("Obtain a mapping of order id and the order's product count " +
-			"Получите сопоставление идентификатора заказа и количества продуктов в заказе")
-	public void exercise11() {
-		long startTime = System.currentTimeMillis();
-		Map<Long, Integer>  result = orderRepo.findAll()
-				.stream()
-				.collect(
-						Collectors.toMap(
-								Order::getId,
-								order -> order.getProducts().size())
-						);
+    @Test
+    @DisplayName("Obtain a mapping of order id and the order's product count " +
+            "Получите сопоставление идентификатора заказа и количества продуктов в заказе")
+    public void exercise11() {
+        long startTime = System.currentTimeMillis();
+        Map<Long, Integer> result = orderRepo.findAll()
+                .stream()
+                .collect(
+                        Collectors.toMap(
+                                Order::getId,
+                                order -> order.getProducts().size())
+                );
 
-		long endTime = System.currentTimeMillis();
-		log.info(String.format("exercise 11 - execution time: %1$d ms", (endTime - startTime)));
-		log.info(result.toString());
-	}
+        long endTime = System.currentTimeMillis();
+        log.info(String.format("exercise 11 - execution time: %1$d ms", (endTime - startTime)));
+        log.info(result.toString());
+    }
 
-	@Test
-	@DisplayName("Obtain a data map of customer and list of orders " +
-			"Получите карту данных клиента и список заказов")
-	public void exercise12() {
-		long startTime = System.currentTimeMillis();
-		Map<Customer, List<Order>> result = orderRepo.findAll()
-				.stream()
-				.collect(Collectors.groupingBy(Order::getCustomer));
+    @Test
+    @DisplayName("Obtain a data map of customer and list of orders " +
+            "Получите карту данных клиента и список заказов")
+    public void exercise12() {
+        long startTime = System.currentTimeMillis();
+        Map<Customer, List<Order>> result = orderRepo.findAll()
+                .stream()
+                .collect(Collectors.groupingBy(Order::getCustomer));
 
-		long endTime = System.currentTimeMillis();
-		log.info(String.format("exercise 12 - execution time: %1$d ms", (endTime - startTime)));
-		log.info(result.toString());
-	}
+        long endTime = System.currentTimeMillis();
+        log.info(String.format("exercise 12 - execution time: %1$d ms", (endTime - startTime)));
+        log.info(result.toString());
+    }
 
-	@Test
-	@DisplayName("Obtain a data map of customer_id and list of order_id(s) " +
-			"Получите карту данных customer_id и список order_id(ов)")
-	public void exercise12a() {
-		long startTime = System.currentTimeMillis();
-		HashMap<Long, List<Long>> result = orderRepo.findAll()
-				.stream()
-				.collect(
-						Collectors.groupingBy(
-								order -> order.getCustomer().getId(),
-								HashMap::new,
-								Collectors.mapping(Order::getId, Collectors.toList())));
-		long endTime = System.currentTimeMillis();
-		log.info(String.format("exercise 12a - execution time: %1$d ms", (endTime - startTime)));
-		log.info(result.toString());
-	}
+    @Test
+    @DisplayName("Obtain a data map of customer_id and list of order_id(s) " +
+            "Получите карту данных customer_id и список order_id(ов)")
+    public void exercise12a() {
+        long startTime = System.currentTimeMillis();
+        HashMap<Long, List<Long>> result = orderRepo.findAll()
+                .stream()
+                .collect(
+                        Collectors.groupingBy(
+                                order -> order.getCustomer().getId(),
+                                HashMap::new,
+                                Collectors.mapping(Order::getId, Collectors.toList())));
+        long endTime = System.currentTimeMillis();
+        log.info(String.format("exercise 12a - execution time: %1$d ms", (endTime - startTime)));
+        log.info(result.toString());
+    }
 
-	@Test
-	@DisplayName("Obtain a data map with order and its total price " +
-			"Получите карту данных с указанием заказа и его общей стоимости")
-	public void exercise13() {
-		long startTime = System.currentTimeMillis();
-		Map<Order, Double> result = orderRepo.findAll()
-				.stream()
-				.collect(
-					Collectors.toMap(
-							Function.identity(),
-							order -> order.getProducts().stream()
-										.mapToDouble(Product::getPrice).sum())
-					);
+    @Test
+    @DisplayName("Obtain a data map with order and its total price " +
+            "Получите карту данных с указанием заказа и его общей стоимости")
+    public void exercise13() {
+        long startTime = System.currentTimeMillis();
+        Map<Order, Double> result = orderRepo.findAll()
+                .stream()
+                .collect(
+                        Collectors.toMap(
+                                Function.identity(),
+                                order -> order.getProducts().stream()
+                                        .mapToDouble(Product::getPrice).sum())
+                );
 
-		long endTime = System.currentTimeMillis();
-		log.info(String.format("exercise 13 - execution time: %1$d ms", (endTime - startTime)));
-		log.info(result.toString());
-	}
+        long endTime = System.currentTimeMillis();
+        log.info(String.format("exercise 13 - execution time: %1$d ms", (endTime - startTime)));
+        log.info(result.toString());
+    }
 
-	@Test
-	@DisplayName("Получите карту данных с указанием заказа и его общей цены (используя reduce)")
-	public void exercise13a() {
-		long startTime = System.currentTimeMillis();
-		Map<Long, Double> result = orderRepo.findAll()
-				.stream()
-				.collect(
-						Collectors.toMap(
-								Order::getId,
-								order -> order.getProducts().stream()
-										.reduce(0D, (acc, product) -> acc + product.getPrice(), Double::sum)
-						));
+    @Test
+    @DisplayName("Получите карту данных с указанием заказа и его общей цены (используя reduce)")
+    public void exercise13a() {
+        long startTime = System.currentTimeMillis();
+        Map<Long, Double> result = orderRepo.findAll()
+                .stream()
+                .collect(
+                        Collectors.toMap(
+                                Order::getId,
+                                order -> order.getProducts().stream()
+                                        .reduce(0D, (acc, product) -> acc + product.getPrice(), Double::sum)
+                        ));
 
-		long endTime = System.currentTimeMillis();
-		log.info(String.format("exercise 13a - execution time: %1$d ms", (endTime - startTime)));
-		log.info(result.toString());
-	}
+        long endTime = System.currentTimeMillis();
+        log.info(String.format("exercise 13a - execution time: %1$d ms", (endTime - startTime)));
+        log.info(result.toString());
+    }
 
-	@Test
-	@DisplayName("Получите карту данных с названием продукта по категориям")
-	public void exercise14() {
-		long startTime = System.currentTimeMillis();	
-		Map<String, List<String>> result = productRepo.findAll()
-				.stream()
-				.collect(
-						Collectors.groupingBy(
-								Product::getCategory,
-								Collectors.mapping(Product::getName, Collectors.toList()))
-						);
+    @Test
+    @DisplayName("Получите карту данных с названием продукта по категориям")
+    public void exercise14() {
+        long startTime = System.currentTimeMillis();
+        Map<String, List<String>> result = productRepo.findAll()
+                .stream()
+                .collect(
+                        Collectors.groupingBy(
+                                Product::getCategory,
+                                Collectors.mapping(Product::getName, Collectors.toList()))
+                );
 
 
-		long endTime = System.currentTimeMillis();
-		log.info(String.format("exercise 14 - execution time: %1$d ms", (endTime - startTime)));
-		log.info(result.toString());
-	}
+        long endTime = System.currentTimeMillis();
+        log.info(String.format("exercise 14 - execution time: %1$d ms", (endTime - startTime)));
+        log.info(result.toString());
+    }
 
-	@Test
-	@DisplayName("Получите самый дорогой товар в каждой категории")
-	void exercise15() {
-		long startTime = System.currentTimeMillis();
-		Map<String, Optional<Product>> result = productRepo.findAll()
-				.stream()
-				.collect(
-						Collectors.groupingBy(
-								Product::getCategory,
-								Collectors.maxBy(Comparator.comparing(Product::getPrice)))
-						);
-		long endTime = System.currentTimeMillis();
-		log.info(String.format("exercise 15 - execution time: %1$d ms", (endTime - startTime)));
-		log.info(result.toString());
+    @Test
+    @DisplayName("Получите самый дорогой товар в каждой категории")
+    void exercise15() {
+        long startTime = System.currentTimeMillis();
+        Map<String, Optional<Product>> result = productRepo.findAll()
+                .stream()
+                .collect(
+                        Collectors.groupingBy(
+                                Product::getCategory,
+                                Collectors.maxBy(Comparator.comparing(Product::getPrice)))
+                );
+        long endTime = System.currentTimeMillis();
+        log.info(String.format("exercise 15 - execution time: %1$d ms", (endTime - startTime)));
+        log.info(result.toString());
 //		result.forEach((k,v) -> {
 //			log.info("key=" + k + ", value=" + v.get());
 //		});
 
-	}
-	
-	@Test
-	@DisplayName("Получите самый дорогой товар (по названию) в каждой категории")
-	void exercise15a() {
-		long startTime = System.currentTimeMillis();
-		Map<String, String> result = productRepo.findAll()
-				.stream()
-				.collect(
-						Collectors.groupingBy(
-								Product::getCategory,
-								Collectors.collectingAndThen(
-										Collectors.maxBy(Comparator.comparingDouble(Product::getPrice)),
-										optionalProduct -> optionalProduct.map(Product::getName).orElse(null)
-								)
-						));
-		long endTime = System.currentTimeMillis();
-		log.info(String.format("exercise 15a - execution time: %1$d ms", (endTime - startTime)));
-		log.info(result.toString());
-	}
+    }
+
+    @Test
+    @DisplayName("Получите самый дорогой товар (по названию) в каждой категории")
+    void exercise15a() {
+        long startTime = System.currentTimeMillis();
+        Map<String, String> result = productRepo.findAll()
+                .stream()
+                .collect(
+                        Collectors.groupingBy(
+                                Product::getCategory,
+                                Collectors.collectingAndThen(
+                                        Collectors.maxBy(Comparator.comparingDouble(Product::getPrice)),
+                                        optionalProduct -> optionalProduct.map(Product::getName).orElse(null)
+                                )
+                        ));
+        long endTime = System.currentTimeMillis();
+        log.info(String.format("exercise 15a - execution time: %1$d ms", (endTime - startTime)));
+        log.info(result.toString());
+    }
 
 }
